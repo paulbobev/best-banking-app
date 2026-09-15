@@ -50,3 +50,14 @@ class TransactionResponse(BaseModel):
     amount: Decimal
     date: str
 
+class TransferRequest(BaseModel):
+    toAccountId: int
+    # gt=0 means that the amount must be above 0
+    amount: Decimal = Field(gt=0, description="Amount must be positive")
+
+class TransferResponse(BaseModel):
+    message: str
+    sourceAccountId: int
+    sourceBalance: Decimal
+    targetAccoundId: int
+
