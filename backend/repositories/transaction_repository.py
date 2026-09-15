@@ -6,7 +6,7 @@ from models.transaction_entity import Transaction
 
 class TransactionRepository:
 
-    def deposit(self, account_id: int, amount: Decimal) -> int:
+    def deposit(self, account_id: int, amount: Decimal, txn_type="DEPOSIT") -> int:
         if amount <= 0:
             raise ValueError("Deposit amount must be positive")
         conn = _connect()
@@ -25,7 +25,7 @@ class TransactionRepository:
             )
             cur = conn.execute(
                 "INSERT INTO transactions (account_id, txn_type, amount) VALUES (?, ?, ?)",
-                (account_id, "DEPOSIT", amount),
+                (account_id, txn_type, amount),
             )
             conn.commit()
             return cur.lastrowid
@@ -35,7 +35,7 @@ class TransactionRepository:
         finally:
             conn.close()
 
-    def withdraw(self, account_id: int, amount: Decimal) -> int:
+    def withdraw(self, account_id: int, amount: Decimal,txn_type="WITHDRAW") -> int:
         if amount <= 0:
             raise ValueError("Withdrawal amount must be positive")
         conn = _connect()
@@ -56,7 +56,7 @@ class TransactionRepository:
             )
             cur = conn.execute(
                 "INSERT INTO transactions (account_id, txn_type, amount) VALUES (?, ?, ?)",
-                (account_id, "WITHDRAW", amount),
+                (account_id, txn_type, amount),
             )
             conn.commit()
             return cur.lastrowid
