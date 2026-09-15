@@ -43,7 +43,7 @@ class AmountPayload(BaseModel):
 
 class BalanceResponse(BaseModel):
     accountId: int
-    balance: float
+    balance: Decimal
 
 class TransactionResponse(BaseModel):
     type: str
@@ -59,5 +59,5 @@ class TransferResponse(BaseModel):
     message: str
     sourceAccountId: int
     sourceBalance: Decimal
-    targetAccoundId: int
-
+    targetAccountId: int
+    targetBalance: Decimal
