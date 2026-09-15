@@ -1,3 +1,4 @@
+from db import init_db
 from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException
@@ -5,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI(title="Simple Bank Application API (In-Memory)")
+
+init_db()
 
 app.add_middleware(
     CORSMiddleware,
