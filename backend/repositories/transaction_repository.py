@@ -66,6 +66,64 @@ class TransactionRepository:
         finally:
             conn.close()
 
+    def transfer(self, from_account_id: int, to_account_id: int, amount: Decimal) -> tuple[int, int]:
+        if amount <= 0:
+            raise ValueError("Transfer amount must be positive")
+        if from_account_id == to_account_id:
+            raise ValueError("Cannot transfer to the same account")
+
+        conn = _connect()
+        try:
+            conn.execute("BEGIN IMMEDIATE")     # lock before reading either balance
+
+            from_row = conn.execute(
+                "SELECT balance FROM accounts WHERE account_id = ?",
+                (from_account_id,),
+            ).fetchone()
+            if from_row is None:
+                raise ValueError(f"Account {from_account_id} not found")
+
+            to_row = conn.execute(
+                "SELECT balance FROM accounts WHERE account_id = ?",
+                (to_account_id,),
+            ).fetchone()
+            if to_row is None:
+                raise ValueError(f"Account {to_account_id} not found")
+
+            from_balance = Decimal(from_row["balance"])
+            if from_balance < amount:
+                raise ValueError("Insufficient funds")
+
+            to_balance = Decimal(to_row["balance"])
+
+            # Debit sender
+            conn.execute(
+                "UPDATE accounts SET balance = ? WHERE account_id = ?",
+                (str(from_balance - amount), from_account_id),
+            )
+            out_cur = conn.execute(
+                "INSERT INTO transactions (account_id, txn_type, amount) VALUES (?, ?, ?)",
+                (from_account_id, "TRANSFEROUT", amount),
+            )
+
+            # Credit receiver
+            conn.execute(
+                "UPDATE accounts SET balance = ? WHERE account_id = ?",
+                (str(to_balance + amount), to_account_id),
+            )
+            in_cur = conn.execute(
+                "INSERT INTO transactions (account_id, txn_type, amount) VALUES (?, ?, ?)",
+                (to_account_id, "TRANSFERIN", amount),
+            )
+
+            conn.commit()
+            return out_cur.lastrowid, in_cur.lastrowid
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
     def find_by_id(self, txn_id: int):
         with get_cursor() as cur:
             cur.execute(
