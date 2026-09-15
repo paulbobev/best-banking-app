@@ -40,6 +40,9 @@ class Account:
         self.balance -= amount
         return self.balance
 
+#Returns the current balance of the account
+    def getBalance(self):
+        return self.balance
 
 # Child classes for future functionality and naming the accounts
 class SavingsAccount(Account):
