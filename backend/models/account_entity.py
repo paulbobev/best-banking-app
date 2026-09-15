@@ -1,4 +1,3 @@
-# models/account_entity.py
 # Using decimal in order to keep transactions precise (floats can have some odd interactions)
 from decimal import Decimal
 
