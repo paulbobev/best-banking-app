@@ -1,4 +1,3 @@
-from db import init_db
 from datetime import datetime
 from decimal import Decimal
 from typing import Dict, List, Optional
@@ -6,13 +5,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+import db
+
 from models.account_entity import Account, CheckingAccount, SavingsAccount
 from models.transaction_entity import Transaction
 from models.user_entity import User
 
 app = FastAPI(title="Simple Bank Application API (Object-Oriented)")
 
-init_db()
 
 app.add_middleware(
     CORSMiddleware,
@@ -97,7 +97,7 @@ def create_account(data: AccountCreateRequest):
   if existing_user is None:
     user = User(
         user_id=user_id_counter, name=data.name, email=data.email
-    ) [cite: 6]
+    )
     users_db[user_id_counter] = user
     user_id_counter += 1
   else:
@@ -105,7 +105,7 @@ def create_account(data: AccountCreateRequest):
 
   # Instantiate subclass based on accountType
   acc_type_upper = data.accountType.upper()
-  created_at_str = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
+  created_at_str = datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S")
 
   if acc_type_upper == "SAVINGS":
     account = SavingsAccount(
@@ -207,7 +207,7 @@ def deposit_by_name(name: str, data: AmountRequest):
       account_id=account.account_id,
       txn_type="DEPOSIT",
       amount=data.amount,
-      created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+      created_at=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
   ) [cite: 5]
   transactions_db.append(txn)
   txn_id_counter += 1
@@ -253,7 +253,7 @@ def withdraw_by_name(name: str, data: AmountRequest):
       account_id=account.account_id,
       txn_type="WITHDRAW",
       amount=data.amount,
-      created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+      created_at=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
   ) [cite: 5]
   transactions_db.append(txn)
   txn_id_counter += 1
