@@ -16,11 +16,30 @@ class UserCreate(BaseModel):
     name: str = Field(min_length = 1)
     email: EmailStr
 
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "name": "John Doe",
+              "email": "john.doe@example.com",
+            }
+        }
+    }
+
 # Formats the response returned after fetching or creating a user
 class UserResponse(BaseModel):
     userId: int
     name: str
     email: str
+
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "userId": 1,
+              "name": "John Doe",
+              "email": "john.doe@example.com",
+            }
+        }
+    }
 
 # Account Schemas
 
@@ -29,16 +48,45 @@ class AccountCreate(BaseModel):
     userId: int
     accountType: str
 
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "userId": 1,
+              "accountType": "SAVINGS",
+            }
+        }
+    }
+
 # Formats the response returned after fetching an account
 class AccountResponse(BaseModel):
     accountId: int
     userName: str
     balance: Decimal
 
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "accountId": 1,
+              "userName": "John Doe",
+              "balance": 250.00,
+              "accountType": "SAVINGS",
+            }
+        }
+    }
+
 # Formats the response returned after creating an account
 class AccountCreatedResponse(BaseModel):
     accountId: int
     accountType: str
+
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "accountId": 1,
+              "accountType": "SAVINGS",
+            }
+        }
+    }
 
 # Transaction Schemas
 
@@ -47,10 +95,27 @@ class AmountPayload(BaseModel):
     # gt=0 means that the amount must be above 0
     amount: Decimal = Field(gt=0, description="Amount must be positive")
 
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "amount": 100.50,
+            }
+        }
+    }
+
 # Formats response for showing an account's balance
 class BalanceResponse(BaseModel):
     accountId: int
     balance: Decimal
+
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "accountId": 1,
+              "balance": 350.50,
+            }
+        }
+    }
 
 # Formats details for transaction history
 class TransactionResponse(BaseModel):
@@ -58,11 +123,30 @@ class TransactionResponse(BaseModel):
     amount: Decimal
     date: str
 
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "type": "DEPOSIT",
+              "amount": 100.50,
+              "date": "2026-09-15 14:30:00",
+            }
+        }
+    }
+
 # Validates incoming data when transferring funds to another account
 class TransferRequest(BaseModel):
     toAccountId: int
     # gt=0 means that the amount must be above 0
     amount: Decimal = Field(gt=0, description="Amount must be positive")
+
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "toAccountId": 2,
+              "amount": 50.00,
+            }
+        }
+    }
 
 # Formats the response after a successful transfer
 class TransferResponse(BaseModel):
@@ -71,3 +155,15 @@ class TransferResponse(BaseModel):
     sourceBalance: Decimal
     targetAccountId: int
     targetBalance: Decimal
+
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "message": "Transfer successful",
+              "sourceAccountId": 1,
+              "sourceBalance": 200.50,
+              "targetAccountId": 2,
+              "targetBalance": 150
+            }
+        }
+    }

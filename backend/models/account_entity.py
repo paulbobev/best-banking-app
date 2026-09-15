@@ -8,7 +8,7 @@ from datetime import datetime
 class Account:
 
 # init here to assign values
-    def __init__(self, account_id: int, user_id: int, account_type: str, balance: Decimal, created_at: str):
+    def __init__(self, account_id: int, user_id: int, account_type: str, balance: Decimal, created_at: str | None = None):
         self.account_id = account_id
         self.user_id = user_id
         self.account_type = account_type
@@ -46,14 +46,14 @@ class Account:
 
 # Child classes for future functionality and naming the accounts
 class SavingsAccount(Account):
-    def __init__(self, account_id: int, user_id: int, balance: Decimal, created_at: str):
+    def __init__(self, account_id: int, user_id: int, balance: Decimal, created_at: str | None = None):
 
         # Super init calls init constructor from the parent class so it can initalize with the given values
         super().__init__(account_id, user_id, "SAVINGS", balance, created_at)
 
 
 class CheckingAccount(Account):
-    def __init__(self, account_id: int, user_id: int, balance: Decimal, created_at: str):
+    def __init__(self, account_id: int, user_id: int, balance: Decimal, created_at: str | None = None):
     
         # Super init calls init constructor from the parent class so it can initalize with the given values
         super().__init__(account_id, user_id, "CHECKING", balance, created_at)

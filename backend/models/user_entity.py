@@ -3,7 +3,7 @@ from datetime import datetime
 
 # User class to store user data and allow it to be retrieved through a dictionary
 class User:
-    def __init__(self, user_id: int, name: str, email: str, created_at: str):
+    def __init__(self, user_id: int, name: str, email: str, created_at: str | None = None):
         self.user_id = user_id
         self.name = name
         self.email = email
