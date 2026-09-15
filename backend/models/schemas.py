@@ -1,4 +1,4 @@
-# Schemas.py is utilized for the JSON responses
+# Schemas.py is utilized for formatting JSON responses and defining validation rules for API requests
 
 # Pydantic is utilized within FastAPI so I will be using this
 # BaseModel is the foundation for the data structure and validation

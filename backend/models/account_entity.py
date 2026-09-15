@@ -4,7 +4,7 @@ from decimal import Decimal
 # Using datetime a timestamp for the account
 from datetime import datetime
 
-# Parent Class: Contains shared attributes and base behavior.
+# Parent class to store account data and do deposits and withdrawal
 class Account:
 
 # init here to assign values

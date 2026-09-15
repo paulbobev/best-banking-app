@@ -1,6 +1,7 @@
-# User class to store user data and allow it to be retrieved through a list
+# Using datetime a timestamp for the account
 from datetime import datetime
 
+# User class to store user data and allow it to be retrieved through a dictionary
 class User:
     def __init__(self, user_id: int, name: str, email: str, created_at: str):
         self.user_id = user_id
