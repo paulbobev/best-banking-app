@@ -1,15 +1,20 @@
 # Using decimal in order to keep transactions precise (floats can have some odd interactions)
 from decimal import Decimal
 
+# Using datetime a timestamp for the account
+from datetime import datetime
+
 # Parent Class: Contains shared attributes and base behavior.
 class Account:
 
 # init here to assign values
-  def __init__(self, account_id: int, user_id: int, account_type: str, balance: Decimal):
+  def __init__(self, account_id: int, user_id: int, account_type: str, balance: Decimal, created_at: str):
     self.account_id = account_id
     self.user_id = user_id
     self.account_type = account_type
     self.balance = balance
+    # Gets timestamp if given, creates one in a formatted fashion if not (Month-Day-Year Hour:Minute:Second)
+    self.created_at = created_at or datetime.now().strftime("%m-%d-%Y %H:%M:%S")
 
 # Deposits money to the account
   def deposit(self, amount: Decimal) -> Decimal:
@@ -38,14 +43,14 @@ class Account:
 
 # Child classes for future functionality and naming the accounts
 class SavingsAccount(Account):
-  def __init__(self, account_id: int, user_id: int, balance: Decimal):
+  def __init__(self, account_id: int, user_id: int, balance: Decimal, created_at: str):
 
     # Super init calls init constructor from the parent class so it can initalize with the given values
-    super().__init__(account_id, user_id, "SAVINGS", balance)
+    super().__init__(account_id, user_id, "SAVINGS", balance, created_at)
 
 
 class CheckingAccount(Account):
-  def __init__(self, account_id: int, user_id: int, balance: Decimal):
+  def __init__(self, account_id: int, user_id: int, balance: Decimal, created_at: str):
     
     # Super init calls init constructor from the parent class so it can initalize with the given values
-    super().__init__(account_id, user_id, "CHECKING", balance)
+    super().__init__(account_id, user_id, "CHECKING", balance, created_at)
