@@ -1,0 +1,7 @@
+__pycache__
+banking.db
+stage2_check.py 
+.venv
+.vscode
+uv.lock
+
