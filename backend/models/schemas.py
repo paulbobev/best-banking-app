@@ -70,4 +70,4 @@ class TransferResponse(BaseModel):
     sourceAccountId: int
     sourceBalance: Decimal
     targetAccountId: int
-
+    targetBalance: Decimal
