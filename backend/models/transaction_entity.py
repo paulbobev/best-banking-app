@@ -1,22 +1,20 @@
 from datetime import datetime
-from enum import Enum
-
 # Using decimal in order to keep transactions precise (floats can have some odd interactions)
 from decimal import Decimal
 
-# Utilizing this transactiontype class makes it much simpler to label and extract
-# str allows for string comparisons and enum keeps the values set
-class TxnType(str, Enum):
-    DEPOSIT = "DEPOSIT"
-    WITHDRAW = "WITHDRAW"
-
 class Transaction:
-    def __init__(self, txn_id: int, account_id: int, txn_type: TxnType, amount: Decimal, created_at: str):
+    def __init__(self, txn_id: int, account_id: int, txn_type: str, amount: Decimal, created_at: str):
         self.txn_id = txn_id
         self.account_id = account_id
         self.txn_type = txn_type
         self.amount = amount
+        # Gets timestamp if given, creates one in a formatted fashion if not (Month-Day-Year Hour:Minute:Second)
         self.created_at = created_at or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        # Only allow strings in valid_types to be used within txn_type and clarify with error
+        valid_types = {"DEPOSIT", "WITHDRAW"}
+        if txn_type not in valid_types:
+            raise ValueError(f"Invalid transaction type. Must be one of {valid_types}")
+
     def get_dict(self) -> dict:
-        return {"txn_id": self.txn_id, "account_id": self.account_id, "txn_type": self.txn_type.value, "amount": self.amount, "created_at": self.created_at}
+        return {"txn_id": self.txn_id, "account_id": self.account_id, "txn_type": self.txn_type, "amount": self.amount, "created_at": self.created_at}
