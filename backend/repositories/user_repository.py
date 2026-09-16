@@ -24,6 +24,11 @@ class UserRepository:
         })
         return user_id
     
+    # Finds a user by their name
+    def find_by_name(self, name: str) -> User | None:
+        doc = users_collection.find_one({"name": name.strip()})
+        return self.to_entity(doc) if doc else None
+
     # Finds a user by integer primary key.
     def find_by_id(self, user_id: int) -> User | None:
      
