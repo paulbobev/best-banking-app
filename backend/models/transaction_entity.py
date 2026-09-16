@@ -14,7 +14,7 @@ class Transaction:
         self.created_at = created_at or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Only allow strings in valid_types to be used within txn_type and clarify with error
-        valid_types = {"DEPOSIT", "WITHDRAW", "TRANSFER_IN", "TRANSFER_OUT"}
+        valid_types = {"DEPOSIT", "WITHDRAW", "TRANSFERIN", "TRANSFEROUT"}
         if txn_type not in valid_types:
             raise ValueError(f"Invalid transaction type. Must be one of {valid_types}")
 
