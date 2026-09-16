@@ -44,11 +44,11 @@ transactions_db: List[Transaction] = []
 # --- Helper Lookup Functions ---
 
 
-def find_user_by_name(name: str) -> User | None:
+def find_user_by_name(name: str) -> Optional[User]:
     for user in users_db.values():
         if user.name.strip().lower() == name.strip().lower():
             return user
-        return None
+    return None
 
 
 # --- User Registration Route ---
