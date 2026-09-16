@@ -36,6 +36,12 @@ class AccountRepository:
     def find_by_user(self, user_id: int) -> list[Account]:
         return [_to_account(d) for d in
                 accounts_col.find({"user_id": user_id}).sort("_id", 1)]
+        
+    # Retrieves all accounts sorted by account_id ascending.
+    def find_all(self) -> list[Account]:
+        
+        cursor = accounts_col.find().sort("_id", 1)
+        return [_to_account(doc) for doc in accounts_col.find().sort("_id", 1)]
 
     def get_balance(self, account_id: int) -> Decimal | None:
         doc = accounts_col.find_one({"_id": account_id}, {"balance": 1})
