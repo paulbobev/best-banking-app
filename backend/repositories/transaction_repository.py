@@ -22,70 +22,42 @@ def _to_txn(doc) -> Transaction:
 
 class TransactionRepository:
 
-    async def transfer(self, from_account_id: int, to_account_id: int, amount: Decimal):
-        amount = Decimal(str(amount))
+    def transfer(self, from_account_id: int, to_account_id: int, amount: Decimal) -> tuple[int, int]:
         if amount <= 0:
             raise ValueError("Transfer amount must be positive")
         if from_account_id == to_account_id:
             raise ValueError("Cannot transfer to the same account")
-
-        async def _apply(session):
-            transfer_id = ObjectId()
-            created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-            # Debit sender
-            debit_result = await accounts_collection.update_one(
-                {"_id": from_account_id, "balance": {"$gte": Decimal128(amount)}},
-                {"$inc": {"balance": Decimal128(-amount)}},
-                session=session,
-            )
-            if debit_result.matched_count == 0:
-                existing = await accounts_collection.find_one({"_id": from_account_id}, session=session)
-                if existing is None:
-                    raise ValueError(f"Account {from_account_id} not found")
-                raise ValueError("Insufficient funds")
-
-            out_txn = Transaction(
-                txn_id=ObjectId(),
-                account_id=from_account_id,
-                txn_type="TRANSFEROUT",
-                amount=amount,
-                created_at=created_at,
-                transfer_id=transfer_id,
-                counterparty_id=to_account_id,
-            )
-            out_doc = out_txn.get_dict()
-            out_doc["_id"] = out_doc.pop("txn_id")
-            out_doc["amount"] = Decimal128(amount)
-            await transactions_collection.insert_one(out_doc, session=session)
-
-            # Credit receiver
-            credit_result = await accounts_collection.update_one(
-                {"_id": to_account_id},
-                {"$inc": {"balance": Decimal128(amount)}},
-                session=session,
-            )
-            if credit_result.matched_count == 0:
-                raise ValueError(f"Account {to_account_id} not found")
-
-            in_txn = Transaction(
-                txn_id=ObjectId(),
-                account_id=to_account_id,
-                txn_type="TRANSFERIN",
-                amount=amount,
-                created_at=created_at,
-                transfer_id=transfer_id,
-                counterparty_id=from_account_id,
-            )
-            in_doc = in_txn.get_dict()
-            in_doc["_id"] = in_doc.pop("txn_id")
-            in_doc["amount"] = Decimal128(amount)
-            await transactions_collection.insert_one(in_doc, session=session)
-
-            return out_txn.txn_id, in_txn.txn_id
-
-        async with await client.start_session() as session:
-            return await session.with_transaction(_apply)
+        source = accounts_col.find_one({"_id": from_account_id}, {"balance": 1})
+        if source is None:
+            raise ValueError(f"Account {from_account_id} not found")
+        target = accounts_col.find_one({"_id": to_account_id}, {"balance": 1})
+        if target is None:
+            raise ValueError(f"Account {to_account_id} not found")
+        source_balance = source["balance"].to_decimal()
+        if source_balance < amount:
+            raise ValueError("Insufficient funds")
+        accounts_col.update_one(
+            {"_id": from_account_id},
+            {"$set": {"balance": Decimal128(str(source_balance - amount))}},
+        )
+        accounts_col.update_one(
+            {"_id": to_account_id},
+            {"$set": {"balance": Decimal128(str(target["balance"].to_decimal() + amount))}},
+        )
+        created_at = _now()
+        out_id = get_next_id("transactions")
+        txns_col.insert_one({
+            "_id": out_id, "txn_id": out_id, "account_id": from_account_id,
+            "txn_type": "TRANSFEROUT", "amount": Decimal128(str(amount)),
+            "created_at": created_at,
+        })
+        in_id = get_next_id("transactions")
+        txns_col.insert_one({
+            "_id": in_id, "txn_id": in_id, "account_id": to_account_id,
+            "txn_type": "TRANSFERIN", "amount": Decimal128(str(amount)),
+            "created_at": created_at,
+        })
+        return out_id, in_id
 
 
     def deposit(self, account_id: int, amount: Decimal) -> int:
