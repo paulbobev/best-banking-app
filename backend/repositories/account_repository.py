@@ -1,7 +1,7 @@
 # repositories/account_repository.py
 from decimal import Decimal
 from bson.decimal128 import Decimal128
-from db import accounts as accounts_col, next_id
+from db import accounts_collection as accounts_col, get_next_id
 from models.account_entity import Account
 
 
@@ -19,7 +19,7 @@ class AccountRepository:
 
     def create(self, user_id: int, account_type: str,
                initial_balance: Decimal = Decimal("0.00")) -> int:
-        account_id = next_id("accounts")
+        account_id = get_next_id("accounts")
         accounts_col.insert_one({
             "_id": account_id,
             "account_id": account_id,
