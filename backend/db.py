@@ -1,5 +1,5 @@
 import os
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 from pymongo.server_api import ServerApi
 
 # Retrieve the MongoDB connection string from the runtime environment.
@@ -13,6 +13,9 @@ db = client["banking_db"]
 users_collection = db["users"]
 accounts_collection = db["accounts"]
 transactions_collection = db["transactions"]
+counters_collection = db["counters"]
+
+
 
 
 def init_db():
@@ -23,3 +26,13 @@ def init_db():
         print("Successfully connected to MongoDB Cloud Atlas (Sync)!")
     except Exception as e:
         print(f"MongoDB Connection Error: {e}")
+        
+def get_next_id(sequence_name: str) -> int:
+  doc = counters_collection.find_one_and_update(
+      {"_id": sequence_name},
+      {"$inc": {"seq": 1}},
+      upsert=True,
+      return_document=ReturnDocument.AFTER)
+  if doc is None:
+    raise RuntimeError(f"Failed to generate sequence ID for '{sequence_name}'.")
+  return int(doc["seq"])
