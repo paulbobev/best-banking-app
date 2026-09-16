@@ -266,14 +266,14 @@ def transfer(account_id: int, data: TransferRequest):
             Transaction(
                 txn_id=txn_id_counter,
                 account_id=source_acc.account_id,
-                txn_type="TRANSFER_OUT",
+                txn_type="TRANSFEROUT",
                 amount=data.amount,
                 created_at=timestamp,
             ),
             Transaction(
                 txn_id=txn_id_counter + 1,
                 account_id=target_acc.account_id,
-                txn_type="TRANSFER_IN",
+                txn_type="TRANSFERIN",
                 amount=data.amount,
                 created_at=timestamp,
             ),

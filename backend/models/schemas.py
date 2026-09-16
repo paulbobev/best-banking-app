@@ -62,6 +62,7 @@ class AccountResponse(BaseModel):
     accountId: int
     userName: str
     balance: Decimal
+    accountType: str
 
     model_config = {
       "json_schema_extra": {
