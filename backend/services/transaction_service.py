@@ -1,4 +1,5 @@
-from repositories import account_repository
+from repositories.account_repository import AccountRepository
+account_repository = AccountRepository()
 from repositories.transaction_repository import TransactionRepository
 from decimal import Decimal
 
@@ -6,8 +7,8 @@ transaction_repository = TransactionRepository()
 def transfer(from_account_id, to_account_id, amount: Decimal):
 
     #Recieving objects from repository
-    from_account = account_repository.get_account(from_account_id)
-    to_account = account_repository.get_account(to_account_id)
+    from_account = account_repository.find_by_id(from_account_id)
+    to_account = account_repository.find_by_id(to_account_id)
 
     #To check if the account exhist and we can transfer funds
     if to_account is None:
@@ -25,15 +26,15 @@ def transfer(from_account_id, to_account_id, amount: Decimal):
     transaction_repository.deposit(to_account_id, amount,"TRANSFERIN")
     
     #returning the new balances
-    from_account = account_repository.get_account(from_account_id)
-    to_account = account_repository.get_account(to_account_id)
-    return from_account.balance, to_account.balance
+    from_account = account_repository.get_balance(from_account_id) 
+    to_account = account_repository.get_balance(to_account_id) 
+    return from_account, to_account
 
 
 #Checks if account is valid and returns accounts balance
 def balance_check(account_id):
     #Recieving objects from repository
-    account = account_repository.get_account(account_id)
+    account = account_repository.find_by_id(account_id)
     #To check if the account exhist
     if account is None:
         raise ValueError("Account ID not found")
