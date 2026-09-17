@@ -1,12 +1,14 @@
 import { useState } from "react";
-import "./CreateAccount.css";
+import { useNavigate } from "react-router-dom";
+import "../CreateAccount.css";
 
 const ACCOUNT_TYPES = [
   { value: "checking", label: "Checking" },
   { value: "savings", label: "Savings" },
 ];
 
-function CreateAccount({ onCreated, onBack }) {
+function CreateAccount() {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,8 +31,8 @@ function CreateAccount({ onCreated, onBack }) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.detail || "Could not create account");
       }
-      const account = await res.json();
-      onCreated?.(account);
+      await res.json();
+      navigate("/login");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -106,7 +108,11 @@ function CreateAccount({ onCreated, onBack }) {
             >
               {submitting ? "Creating account…" : "Confirm details"}
             </button>
-            <button type="button" className="secondary-button" onClick={onBack}>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => navigate("/login")}
+            >
               Back to home
             </button>
           </div>
