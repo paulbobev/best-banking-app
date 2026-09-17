@@ -9,6 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from pydantic import BaseModel, EmailStr
 from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
+from pwdlib.hashers.bcrypt import BcryptHasher
 from repositories.user_repository import UserRepository
 from models.schemas import LoginRequest, TokenResponse, TokenData
 
@@ -19,7 +21,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
     os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
 )
 
-password_hash = PasswordHash.recommended()
+password_hash = PasswordHash((Argon2Hasher(), BcryptHasher()))
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 user_repo = UserRepository()
 
@@ -34,8 +36,13 @@ def hash_password(password: str) -> str:
   return password_hash.hash(password)
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-  return password_hash.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str | None) -> bool:
+  if not hashed_password:
+    return False
+  try:
+    return password_hash.verify(plain_password, hashed_password)
+  except Exception:
+    return False
 
 
 def create_access_token(
@@ -101,23 +108,23 @@ def require_roles(allowed_roles: List[str]):
 
 # --- Authentication Routes ---
 
-
 # Credit: Schraeyas for initial login route design (adapted for MongoDB UserRepository & Email)
 @auth_router.post("/login", response_model=TokenResponse)
 def login(data: LoginRequest):
-  user = user_repo.find_by_email(data.email)
-  if not user or not verify_password(data.password, user.password_hash):
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Incorrect email or password",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    user = user_repo.find_by_email(data.email)
 
-  access_token = create_access_token(
-      data={
-          "sub": str(user.user_id),
-          "role": getattr(user, "role", "user"),
-          "email": user.email,
-      }
-  )
-  return {"access_token": access_token, "token_type": "bearer"}
+    if not user or not verify_password(data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = create_access_token(
+        data={
+            "sub": str(user.user_id),
+            "role": getattr(user, "role", "user"),
+            "email": user.email,
+        }
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
