@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import UserCard from '../components/UserCard'
 import { getCurrentUser } from '../currentUser'
 
+
 /* Dashboard for the signed-in user */
 function Dashboard() {
     const user = getCurrentUser()

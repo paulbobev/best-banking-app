@@ -1,33 +1,31 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import AppLayout from './layouts/AppLayout'
 import CreateAccount from './pages/CreateAccount'
 import Dashboard from './pages/Dashboard'
 import DevPage from './pages/DevPage'
-import Login from './pages/Login'
 import TransactionLookup from './pages/TransactionLookup'
+import Settings from './pages/Settings'
 import './App.css'
 
+/* /login and /signup are unrouted until the homepage and sign in pages
+   land. Login.jsx is still in pages/, just not reachable yet. */
 function App() {
-  return (
-    <>
-      <nav className="flex gap-6 border-b px-8 py-4 text-sm">
-        <Link to="/">Dashboard</Link>
-        <Link to="/lookup">Transaction Lookup</Link>
-        <Link to="/login">Sign in</Link>
-        <Link to="/dev">Dev Tools</Link>
-      </nav>
+    return (
+        <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      <main className="p-8">
-      <Routes>
-        <Route path="/dev" element={<DevPage/>} />
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/lookup" element={<TransactionLookup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/accounts/new" element={<CreateAccount />} />
-        <Route path="*" element={<p>Page not found</p>} />
-      </Routes>
-      </main>
-    </>
-  )
+            {/* AppLayout draws the sidebar around all of these. */}
+            <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/lookup" element={<TransactionLookup />} />
+                <Route path="/accounts/new" element={<CreateAccount />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/dev" element={<DevPage />} />
+            </Route>
+
+            <Route path="*" element={<p>Page not found</p>} />
+        </Routes>
+    )
 }
 
 export default App
