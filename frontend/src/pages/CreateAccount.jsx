@@ -2,17 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../CreateAccount.css";
 
-const ACCOUNT_TYPES = [
-  { value: "checking", label: "Checking" },
-  { value: "savings", label: "Savings" },
-];
-
 function CreateAccount() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [accountType, setAccountType] = useState(ACCOUNT_TYPES[0].value);
 
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -82,20 +76,6 @@ function CreateAccount() {
               autoComplete="new-password"
               required
             />
-          </label>
-
-          <label className="field">
-            <span>Account type</span>
-            <select
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
-            >
-              {ACCOUNT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
           </label>
 
           {error && <p className="form-error">{error}</p>}
