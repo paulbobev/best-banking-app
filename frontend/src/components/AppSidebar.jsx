@@ -1,5 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Search, PlusCircle, LogOut } from 'lucide-react'
+import {
+    LayoutDashboard,
+    Search,
+    PlusCircle,
+    Banknote,
+    ArrowLeftRight,
+    LogOut,
+} from 'lucide-react'
 import {
     Sidebar,
     SidebarContent,
@@ -17,6 +24,9 @@ const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/lookup', label: 'Transaction Lookup', icon: Search },
     { to: '/accounts/new', label: 'Create New Account', icon: PlusCircle },
+    { to: '/withdraw', label: 'Withdraw', icon: Banknote },
+    { to: '/deposit', label: 'Deposit', icon: Banknote },
+    { to: '/transfer', label: 'Transfer', icon: ArrowLeftRight },
 ]
 
 function AppSidebar() {

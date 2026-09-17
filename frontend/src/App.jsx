@@ -3,7 +3,11 @@ import AppLayout from './layouts/AppLayout'
 import CreateAccount from './pages/CreateAccount'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import NewAccount from './pages/NewAccount'
 import TransactionLookup from './pages/TransactionLookup'
+import Withdraw from './pages/Withdraw'
+import Deposit from './pages/Deposit'
+import Transfer from './pages/Transfer'
 import Settings from './pages/Settings'
 import './App.css'
 
@@ -22,7 +26,10 @@ function App() {
             <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/lookup" element={<TransactionLookup />} />
-                <Route path="/accounts/new" element={<CreateAccount />} />
+                <Route path="/accounts/new" element={<NewAccount />} />
+                <Route path="/withdraw" element={<Withdraw />} />
+                <Route path="/deposit" element={<Deposit />} />
+                <Route path="/transfer" element={<Transfer />} />
                 <Route path="/settings" element={<Settings />} />
             </Route>
 
