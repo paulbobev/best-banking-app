@@ -1,99 +1,123 @@
+# auth.py. Core authentication, password hashing, token management, 
+# and role-based access control for the banking API.
+
+from datetime import UTC, datetime, timedelta
 import os
-from datetime import datetime, timedelta, timezone
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 import jwt
-import bcrypt
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from pwdlib import PasswordHash
+from repositories.user_repository import UserRepository
+from models.schemas import LoginRequest, TokenResponse, TokenData
 
-# Set SECRET_KEY in the runtime environment; never commit a real secret.
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-secret-change-me")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# --- Configuration ---
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-bank-key-change-in-prod")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+)
 
-pwd_context = bcrypt
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+password_hash = PasswordHash.recommended()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+user_repo = UserRepository()
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(
-        plain_password.encode('utf-8'), 
-        hashed_password.encode('utf-8')
-    )
+# Credit: Schraeyas for router prefix and endpoint scaffolding
+auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+
+# --- Cryptographic Helpers ---
+
 
 def hash_password(password: str) -> str:
-    pwd_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(pwd_bytes, salt).decode('utf-8')
+  return password_hash.hash(password)
 
-router = APIRouter(tags=["Authentication"])
 
-USERS_DB = {
-    "admin": {
-        "username": "admin",
-        "hashed_password": hash_password("admin123"),
-        "role": "admin",
-    },
-    "user": {
-        "username": "user",
-        "hashed_password": hash_password("user123"),
-        "role": "user",
-    },
-}
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+  return password_hash.verify(plain_password, hashed_password)
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
-class TokenData(BaseModel):
-    username: Optional[str] = None
-    role: Optional[str] = None
+def create_access_token(
+    data: dict, expires_delta: Optional[timedelta] = None
+) -> str:
+  to_encode = data.copy()
+  expire = (
+      datetime.now(UTC) + expires_delta
+      if expires_delta
+      else datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+  )
+  to_encode.setdefault("scope", "user")
+  to_encode.update({"exp": expire})
+  return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenData:
+def verify_token(token: str) -> dict | None:
+  try:
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+  except jwt.PyJWTError:
+    return None
+
+
+# --- FastAPI Dependency Guards ---
+
+
+# Credit: Schraeyas for token payload validation pattern returning TokenData
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        role: str = payload.get("role")
-        if username is None or role is None:
-            raise credentials_exception
-        return TokenData(username=username, role=role)
-    except jwt.PyJWTError:
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="Could not validate credentials",
+      headers={"WWW-Authenticate": "Bearer"},
+  )
+  
+    payload = verify_token(token)
+    if not payload:
         raise credentials_exception
 
+
+    sub = payload.get("sub")
+    if sub is None:
+        raise credentials_exception
+
+    try:
+        role = payload.get("role", "user")
+        return TokenData(user_id=int(sub), role=role, email=payload.get("email"))
+    except (ValueError, TypeError):
+        raise credentials_exception
+
+
+# Credit: Schraeyas for the require_roles dependency factory pattern
 def require_roles(allowed_roles: List[str]):
-    def role_checker(current_user: TokenData = Depends(get_current_user)):
-        if current_user.role not in allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Operation not permitted for current role",
-            )
-        return current_user
-    return role_checker
+  def role_checker(current_user: TokenData = Depends(get_current_user),) -> TokenData:
+    if current_user.role not in allowed_roles:
+      raise HTTPException(
+          status_code=status.HTTP_403_FORBIDDEN,
+          detail="Operation not permitted for current role",
+      )
+    return current_user
 
-@router.post("/login", response_model=Token)
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = USERS_DB.get(form_data.username)
-    if not user or not verify_password(form_data.password, user["hashed_password"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+  return role_checker
 
-    access_token = create_access_token(
-        data={"sub": user["username"], "role": user["role"]}
+
+# --- Authentication Routes ---
+
+
+# Credit: Schraeyas for initial login route design (adapted for MongoDB UserRepository & Email)
+@auth_router.post("/login", response_model=TokenResponse)
+def login(data: LoginRequest):
+  user = user_repo.find_by_email(data.email)
+  if not user or not verify_password(data.password, user.password_hash):
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect email or password",
+        headers={"WWW-Authenticate": "Bearer"},
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+
+  access_token = create_access_token(
+      data={
+          "sub": str(user.user_id),
+          "role": getattr(user, "role", "user"),
+          "email": user.email,
+      }
+  )
+  return {"access_token": access_token, "token_type": "bearer"}
