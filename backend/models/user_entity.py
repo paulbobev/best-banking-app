@@ -7,8 +7,10 @@ class User:
         self.user_id = user_id
         self.name = name
         self.email = email
+        self.password_hash: str = ""
+        self.role: str = "user"
         self.created_at = created_at or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Returns a dictionary of the data for easy reading and logging
     def get_dict(self) -> dict:
-        return {"user_id": self.user_id, "name": self.name, "email": self.email}
+        return {"user_id": self.user_id, "name": self.name, "email": self.email, "role": self.role}

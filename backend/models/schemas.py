@@ -15,12 +15,14 @@ from decimal import Decimal
 class UserCreate(BaseModel):
     name: str = Field(min_length = 1)
     email: EmailStr
+    password: str = Field(min_length = 6)
 
     model_config = {
       "json_schema_extra": {
           "example": {
               "name": "John Doe",
               "email": "john.doe@example.com",
+              "password": "pass1234"
             }
         }
     }
@@ -36,6 +38,51 @@ class UserResponse(BaseModel):
           "example": {
               "userId": 1,
               "name": "John Doe",
+              "email": "john.doe@example.com",
+            }
+        }
+    }
+    
+# Validates incoming data when logging in
+class LoginRequest(BaseModel):
+        email: EmailStr
+        password: str = Field(min_length = 6)
+
+        model_config = {
+          "json_schema_extra": {
+              "example": {
+                  "email": "john.doe@example.com",
+                  "password": "pass1234"
+                }
+            }
+        }
+
+# Bearer is an authentication scheme and we use it to authorize API requests
+# It is also set as a default value for convenience in API responses
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "access_token": "your_access_token_here",
+                "token_type": "bearer",
+            }
+        }
+    }
+
+# Schraeyas contributed the TokenData schema for token payload validation
+class TokenData(BaseModel):
+    user_id: int
+    role: str
+    email: str | None = None
+
+    model_config = {
+      "json_schema_extra": {
+          "example": {
+              "user_id": 1,
+              "role": "user",
               "email": "john.doe@example.com",
             }
         }
