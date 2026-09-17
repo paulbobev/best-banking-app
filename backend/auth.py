@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 import os
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from pydantic import BaseModel, EmailStr
 from pwdlib import PasswordHash
@@ -22,7 +22,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
 )
 
 password_hash = PasswordHash((Argon2Hasher(), BcryptHasher()))
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+http_bearer = HTTPBearer()
 user_repo = UserRepository()
 
 # Credit: Schraeyas for router prefix and endpoint scaffolding
@@ -70,27 +70,28 @@ def verify_token(token: str) -> dict | None:
 
 
 # Credit: Schraeyas for token payload validation pattern returning TokenData
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
-    credentials_exception = HTTPException(
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(http_bearer)) -> TokenData:
+    
+  token = credentials.credentials
+  credentials_exception = HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
       detail="Could not validate credentials",
       headers={"WWW-Authenticate": "Bearer"},
   )
-  
-    payload = verify_token(token)
-    if not payload:
-        raise credentials_exception
 
+  payload = verify_token(token)
+  if not payload:
+    raise credentials_exception
 
-    sub = payload.get("sub")
-    if sub is None:
-        raise credentials_exception
+  sub = payload.get("sub")
+  if sub is None:
+    raise credentials_exception
 
-    try:
-        role = payload.get("role", "user")
-        return TokenData(user_id=int(sub), role=role, email=payload.get("email"))
-    except (ValueError, TypeError):
-        raise credentials_exception
+  try:
+    role = payload.get("role", "user")
+    return TokenData(user_id=int(sub), role=role, email=payload.get("email"))
+  except (ValueError, TypeError):
+    raise credentials_exception
 
 
 # Credit: Schraeyas for the require_roles dependency factory pattern
