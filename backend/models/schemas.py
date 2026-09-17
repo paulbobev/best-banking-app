@@ -15,7 +15,7 @@ from decimal import Decimal
 class UserCreate(BaseModel):
     name: str = Field(min_length = 1)
     email: EmailStr
-    password: str = Field(min_length = 6)
+    password: str = Field(min_length = 1)
 
     model_config = {
       "json_schema_extra": {
