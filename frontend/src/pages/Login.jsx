@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { setCurrentUser } from "../currentUser";
+import { setToken } from "../currentUser";
+import { apiFetch } from "../api";
 
 function Login() {
-  const [accountId, setAccountId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(null);
   const [loggingIn, setLoggingIn] = useState(false);
@@ -14,18 +15,13 @@ function Login() {
     setLoginError(null);
     setLoggingIn(true);
     try {
-      const res = await fetch("/api/login", {
+      const data = await apiFetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountId, password }),
+        body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.detail || "Invalid account ID or password");
-      }
-      setCurrentUser({ accountId });
+      setToken(data.access_token);
       setPassword("");
-      navigate("/lookup");
+      navigate("/dashboard");
     } catch (err) {
       setLoginError(err.message);
     } finally {
@@ -38,17 +34,18 @@ function Login() {
       <div className="auth-card">
         <h1 className="auth-title">Sign in</h1>
         <p className="auth-subtitle">
-          Enter your account ID and password to view your account.
+          Enter your email and password to view your accounts.
         </p>
 
         <form className="auth-form" onSubmit={handleLogin}>
           <label className="field">
-            <span>Account ID</span>
+            <span>Email</span>
             <input
-              value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
-              placeholder="e.g. 100293"
-              autoComplete="username"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="jane@example.com"
+              autoComplete="email"
               required
             />
           </label>
@@ -73,7 +70,7 @@ function Login() {
         </form>
 
         <p className="auth-switch">
-          New here? <Link to="/accounts/new">Create an account</Link>
+          New here? <Link to="/signup">Create an account</Link>
         </p>
       </div>
     </div>

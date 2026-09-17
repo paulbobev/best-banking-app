@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiFetch } from '../api'
 import { Badge } from '@/components/ui/badge'
 import {
     Card,
@@ -16,9 +17,13 @@ function AccountCard({account}) {
 
     useEffect(() => {
         async function loadTransactions() {
-            const res = await fetch(`/api/accounts/${account.accountId}/transactions`)
-            if (!res.ok) return
-            setTransactions(await res.json())
+            try {
+                setTransactions(
+                    await apiFetch(`/api/accounts/${account.accountId}/transactions`)
+                )
+            } catch {
+                /* Leave it null: the card still shows the balance and type */
+            }
         }
         loadTransactions()
     }, [account.accountId])

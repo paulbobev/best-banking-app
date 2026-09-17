@@ -1,13 +1,15 @@
-import { Outlet } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import AppSidebar from '@/components/AppSidebar'
+import { getCurrentUser } from '@/currentUser'
 
 /* Shell for the signed-in part of the app: everything nested under this
-   route gets the sidebar, and nothing else does.
-
-   The sign in guard goes here once /login exists again. */
+   route gets the sidebar, and nothing else does. */
 function AppLayout() {
+    /* No token, or one that has expired, means back to the sign in page */
+    if (!getCurrentUser()) return <Navigate to="/login" replace />
+
     return (
         <TooltipProvider>
             <SidebarProvider>

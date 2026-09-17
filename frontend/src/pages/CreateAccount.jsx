@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../api";
 import "../CreateAccount.css";
 
 function CreateAccount() {
@@ -16,16 +17,12 @@ function CreateAccount() {
     setError(null);
     setSubmitting(true);
     try {
-      const res = await fetch("/api/accounts", {
+      /* Registration is the one public endpoint. Opening an actual bank
+         account happens later, from the dashboard, with a token. */
+      await apiFetch("/api/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, accountType }),
+        body: JSON.stringify({ name, email, password }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.detail || "Could not create account");
-      }
-      await res.json();
       navigate("/login");
     } catch (err) {
       setError(err.message);

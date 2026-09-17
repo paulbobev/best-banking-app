@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import UserCard from '../components/UserCard'
 import { getCurrentUser } from '../currentUser'
-
+import { apiFetch } from '../api'
 
 /* Dashboard for the signed-in user */
 function Dashboard() {
@@ -10,29 +10,30 @@ function Dashboard() {
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        if (!user) return
+        if (!getCurrentUser()) return
 
         async function loadAccounts() {
             try {
-                const res = await fetch(
-                    `/api/users/${encodeURIComponent(user.name)}/accounts`
-                )
-                if (!res.ok) throw new Error(`Could not load accounts (${res.status})`)
-                setAccounts(await res.json())
+                /* The token identifies the owner, so there is nothing to pass */
+                setAccounts(await apiFetch('/api/accounts/my-accounts'))
             } catch (err) {
                 setError(err.message)
             }
         }
         loadAccounts()
-    }, [user?.name])
+    }, [])
 
-    if (!user) return <p className="text-muted-foreground">No user selected. Pick one at /dev.</p>
+    if (!user) return <p className="text-muted-foreground">Not signed in.</p>
     if (error) return <p className="text-destructive">{error}</p>
     if (accounts === null) return <p className="text-muted-foreground">Loading dashboard...</p>
 
+    /* The token carries the email; the display name only comes back on the
+       accounts, so fall back to the email for someone with none yet. */
+    const name = accounts[0]?.userName ?? user.email
+
     return (
         <div className="mx-auto max-w-3xl">
-            <UserCard user={{ ...user, accounts }} />
+            <UserCard user={{ name, email: user.email, accounts }} />
         </div>
     )
 }

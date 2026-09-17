@@ -1,17 +1,18 @@
 import { useState } from 'react'
+import { apiFetch } from '../api'
 
 function TransactionLookup() {
   const [accountId, setAccountId] = useState('')
   const [transactions, setTransactions] = useState([])
   const [error, setError] = useState(null)
 
+  /* The API enforces ownership, so this only resolves for accounts
+     belonging to whoever is signed in. */
   async function lookup(e) {
     e.preventDefault()
     setError(null)
     try {
-      const res = await fetch(`/api/accounts/${accountId}/transactions`)
-      if (!res.ok) throw new Error((await res.json()).detail)
-      setTransactions(await res.json())
+      setTransactions(await apiFetch(`/api/accounts/${accountId}/transactions`))
     } catch (err) {
       setError(err.message)
       setTransactions([])
