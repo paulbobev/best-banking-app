@@ -3,6 +3,8 @@ from decimal import Decimal
 from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from backend.auth import router as auth_router, require_roles
+
 
 # Domain Entities
 from models.account_entity import Account, CheckingAccount, SavingsAccount
