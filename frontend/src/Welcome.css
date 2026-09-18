@@ -10,12 +10,17 @@
   padding: 64px 20px 56px;
   text-align: center;
 
-  background: linear-gradient(
-    180deg,
-    rgba(59, 130, 246, 0.12) 0%,
-    rgba(59, 130, 246, 0.03) 60%,
-    transparent 100%
-  );
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(59, 130, 246, 0.12) 0%,
+      rgba(59, 130, 246, 0.03) 60%,
+      transparent 100%
+    ),
+    var(--welcome-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 
   @media (max-width: 1024px) {
     padding: 48px 20px 40px;
