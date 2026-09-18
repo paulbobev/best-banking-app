@@ -1,6 +1,6 @@
 import { clearCurrentUser, getToken } from './currentUser'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
 
 /* fetch wrapper that attaches the bearer token and turns a failed response
    into a thrown Error carrying the API's own detail message. */

@@ -46,7 +46,7 @@ class UserResponse(BaseModel):
 # Validates incoming data when logging in
 class LoginRequest(BaseModel):
         email: EmailStr
-        password: str = Field(min_length = 6)
+        password: str = Field(min_length = 1)
 
         model_config = {
           "json_schema_extra": {
