@@ -1,15 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import "../Welcome.css";
-import welcomeBg from "../assets/welcome-bg.png";
 
 function Welcome() {
   const navigate = useNavigate();
 
   return (
-    <div
-      className="welcome-view"
-      style={{ "--welcome-bg-image": `url(${welcomeBg})` }}
-    >
+    <div className="welcome-view">
       <div className="welcome-content">
         <h1 className="welcome-title">Welcome to CHAD Banking</h1> 
         <p className="welcome-subtital">
