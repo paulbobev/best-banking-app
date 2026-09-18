@@ -1,5 +1,7 @@
 import { clearCurrentUser, getToken } from './currentUser'
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+
 /* fetch wrapper that attaches the bearer token and turns a failed response
    into a thrown Error carrying the API's own detail message. */
 export async function apiFetch(path, options = {}) {
@@ -9,7 +11,9 @@ export async function apiFetch(path, options = {}) {
     if (options.body) headers['Content-Type'] = 'application/json'
     if (token) headers.Authorization = `Bearer ${token}`
 
-    const res = await fetch(path, { ...options, headers })
+    // Prepend BASE_URL to path
+    const url = `${BASE_URL}${path}`
+    const res = await fetch(url, { ...options, headers })
 
     /* Only treat this as an expiry if we actually sent a token. Without
        that check a failed sign in would report itself as a dead session. */

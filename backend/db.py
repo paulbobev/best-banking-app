@@ -6,10 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 # Retrieve the MongoDB connection string from the runtime environment.
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "banking_db")
 
 # Initialize standard synchronous PyMongo client
-client = MongoClient(MONGO_URI, server_api=ServerApi("1"))
-db = client["banking_db"]
+# serverSelectionTimeoutMS prevents Lambda from hanging if the network fails
+client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+db = client[DATABASE_NAME]
 
 # Document Collections
 users_collection = db["users"]

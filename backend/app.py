@@ -3,6 +3,9 @@ from decimal import Decimal
 from typing import List, Optional
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from mangum import Mangum
 
 # Domain Entities
 from models.account_entity import Account, CheckingAccount, SavingsAccount
@@ -213,3 +216,13 @@ def get_transactions(account_id: int, current_user: TokenData = Depends(get_curr
         {"type": t.txn_type, "amount": t.amount, "date": t.created_at}
         for t in history
     ]
+# Mount static assets (JS/CSS/images) from the dist folder
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
+
+# Catch-all: serve index.html for any client-side routes not matched by API
+@app.get("/{full_path:path}")
+def serve_spa(full_path: str):
+  return FileResponse("frontend/dist/index.html")
+    
+handler = Mangum(app)
