@@ -1,4 +1,4 @@
-# Best Banking App
+# CHAD Banking
 
 A modern, full-stack digital banking application built with the **FARM stack** (FastAPI, React, MongoDB, and Tailwind CSS). This platform provides secure, real-time banking operations including account management, deposits, withdrawals, and instant fund transfers.
 
