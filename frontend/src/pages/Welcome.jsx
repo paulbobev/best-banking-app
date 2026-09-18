@@ -7,9 +7,12 @@ function Welcome() {
   return (
     <div className="welcome-view">
       <div className="welcome-content">
-        <h1 className="welcome-title">Welcome to CHAD Banking</h1>
+        <h1 className="welcome-title">Welcome to CHAD Banking</h1> 
+        <p className="welcome-subtital">
+          C.H.A.D = Can Handle A Dollar
+        </p>
         <p className="welcome-subtitle">
-          Manage your accounts, track transactions, and move money — all in one
+          Manage your accounts, track transactions, and move money, all in one
           place.
         </p>
       </div>

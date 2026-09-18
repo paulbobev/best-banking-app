@@ -31,7 +31,8 @@
 
 .welcome-title {
   font-size: 44px;
-  letter-spacing: -1px;
+  line-height: 1;
+  letter-spacing: normal;
   margin: 0 0 16px;
   color: #2452c9;
 
